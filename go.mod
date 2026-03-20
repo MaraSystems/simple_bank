@@ -1,4 +1,4 @@
-module github.com/odekodu/simple_bank
+module github.com/MaraSystems/simple_bank
 
 go 1.26.1
 

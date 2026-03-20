@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odekodu/simple_bank/util"
+	"github.com/MaraSystems/simple_bank/util"
 	"github.com/stretchr/testify/require"
 )
 
