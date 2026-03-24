@@ -10,8 +10,9 @@ import (
 )
 
 func createRandomAccount(t *testing.T) Account {
+	user := createRandomUser(t)
 	arg := CreateAccountParams{
-		Owner:    util.RandomOwner(),
+		Owner:    user.Username,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
@@ -50,20 +51,20 @@ func TestGetAccount(t *testing.T) {
 	require.WithinDuration(t, randomAccount.CreatedAt.Time, account.CreatedAt.Time, time.Second)
 }
 
-func TestUpdateAccount(t *testing.T) {
+func TestUpdateAccountBalance(t *testing.T) {
 	randomAccount := createRandomAccount(t)
-	arg := UpdateAccountParams{
-		ID:      randomAccount.ID,
-		Balance: util.RandomMoney(),
+	arg := UpdateAccountBalanceParams{
+		ID:     randomAccount.ID,
+		Amount: util.RandomMoney(),
 	}
 
-	account, err := testQueries.UpdateAccount(t.Context(), arg)
+	account, err := testQueries.UpdateAccountBalance(t.Context(), arg)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
 	require.Equal(t, randomAccount.Owner, account.Owner)
-	require.Equal(t, arg.Balance, account.Balance)
+	require.Equal(t, randomAccount.Balance+arg.Amount, account.Balance)
 	require.Equal(t, randomAccount.Currency, account.Currency)
 
 	require.NotZero(t, randomAccount.ID)
@@ -83,11 +84,13 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestListAccounts(t *testing.T) {
+	var lastAccount Account
 	for i := 0; i < 10; i++ {
-		createRandomAccount(t)
+		lastAccount = createRandomAccount(t)
 	}
 
 	arg := ListAccountsParams{
+		Owner:  lastAccount.Owner,
 		Limit:  5,
 		Offset: 0,
 	}
@@ -95,9 +98,10 @@ func TestListAccounts(t *testing.T) {
 	accounts, err := testQueries.ListAccounts(t.Context(), arg)
 
 	require.NoError(t, err)
-	require.Len(t, accounts, 5)
+	require.NotEmpty(t, accounts)
 
 	for _, acc := range accounts {
 		require.NotEmpty(t, acc)
+		require.Equal(t, lastAccount.Owner, acc.Owner)
 	}
 }
